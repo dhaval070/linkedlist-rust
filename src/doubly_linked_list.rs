@@ -125,13 +125,10 @@ impl<T :PartialEq+Display> Dlist<T> {
         let mut node = Rc::clone(&self.head);
 
         for _ in 1..pos {
-            let n = {
-                let Node::Value { value:_, ref mut next, prev: _ } = *node.borrow_mut() else {
-                    bail!("index out of bound");
-                };
-                Rc::clone(next)
+            let n = match &*node.borrow() {
+                Node::Value { next, .. } => next.clone(),
+                _ => bail!("index out of bound"),
             };
-
             node = n;
         }
 
