@@ -170,45 +170,34 @@ impl<T :PartialEq+Display> Dlist<T> {
         Ok(())
     }
 
-    pub fn delete_nth(&mut self, pos :u32) -> Result<()> {
+    pub fn delete_nth(&mut self, pos: u32) -> Result<()> {
         let mut node = Rc::clone(&self.head);
-
-        let mut n :Rc<RefCell<Node<T>>>;
-
-        for _ in 1..=pos {
-            n = match *node.borrow_mut() {
-                Node::Value { ref mut next, .. } => Rc::clone(next),
+        for _ in 0..pos {
+            let n = match *node.borrow() {
+                Node::Value { ref next, .. } => Rc::clone(next),
                 _ => bail!("index out of bound"),
             };
-
             node = n;
         }
 
-        if pos == 0 {
-            let n = match *self.head.borrow_mut() {
-                Node::Value { ref mut next, .. } => next.clone(),
-                _ => bail!("index out of bound"),
-            };
-
-            self.head = n;
-            return Ok(());
-        }
-
-        let Node::Value { ref mut next, ref mut prev, .. } = *node.borrow_mut() else {
+        let Node::Value { ref next, ref prev, .. } = *node.borrow() else {
             bail!("index out of bound");
         };
 
-        let nn = next;
-        let pp = prev;
-
-        if let Some(rc) = pp.upgrade() {
-            if let Node::Value {  ref mut next, .. } = *rc.borrow_mut() {
-                *next = nn.clone();
+        // Update prev node's next pointer, or update head if deleting first node
+        if let Some(prev_rc) = prev.upgrade() {
+            if let Node::Value { next: ref mut prev_next, .. } = *prev_rc.borrow_mut() {
+                *prev_next = next.clone();
             }
+        } else {
+            self.head = next.clone();
         }
 
-        if let Node::Value { ref mut prev, .. } = *nn.borrow_mut() {
-            *prev = pp.clone();
+        // Update next node's prev pointer, or update tail if deleting last node
+        if let Node::Value { prev: ref mut next_prev, .. } = *next.borrow_mut() {
+            *next_prev = prev.clone();
+        } else {
+            self.tail = prev.clone();
         }
 
         Ok(())
