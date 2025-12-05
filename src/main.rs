@@ -1,7 +1,9 @@
 mod linked_list;
+mod bstree;
 
 use linked_list::List;
 use linkedlist_rust::doubly_linked_list::Dlist;
+use bstree::Bstree;
 
 fn main() {
     let mut list: List<i32> = List::new();
@@ -35,7 +37,6 @@ fn main() {
 
     dlist.insert_at(50, 4).unwrap();
 
-    dlist.print();
     dlist.print_reverse();
     println!("##");
 
@@ -52,5 +53,16 @@ fn main() {
     println!("##");
     dlist.print();
     dlist.print_reverse();
+
+
+    let mut btree = Bstree::new();
+    btree.insert(10);
+    btree.insert(4);
+    btree.insert(20);
+    btree.insert(25);
+    btree.insert(22);
+    btree.insert(10);
+
+    btree.traverse();
 }
 
